@@ -1,9 +1,9 @@
 from telegram import InlineKeyboardButton,InlineKeyboardMarkup, Update
-from telegram.ext import  Application, CommandHandler, CallbackContext, CallbackQueryHandler
+from telegram.ext import  Application, CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
 import os 
 import logging
 from dotenv import load_dotenv
-from openai import OpenAI
+from google import genai
 
 #Load the .env file first 
 load_dotenv()
@@ -12,6 +12,8 @@ logging.basicConfig(
 )
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 is_registered = False
 
@@ -105,7 +107,39 @@ async def handle_button_click(update: Update, context: CallbackContext):
         
     await query.message.reply_text(f"Current PIN: {context.user_data['pin_code']}", reply_markup = generate_keypad())
 
+async def chat(update: Update, coontext: CallbackContext):
+    """Handle  user Prompt and response with Open AI GPT-4o"""
+    user_message = update.message.text
+    print("----------Chat----------")
+    print(user_message, is_registered)
 
+    if not is_registered:
+        await update.message.reply_text("Please Register your Account first by Typing /register")
+        return
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[{
+                "parts": [{
+                    "text": """You are a funny chat bot. Reply to messages only in Banglish.
+                            Make funny and super romantic jokes that will make users laugh.
+                            Be creative and ask engaging questions.
+                            Keep responses short and sweet."""
+                }, {
+                    "text": user_message
+                }]
+            }],
+        )
+        reply = response.text
+        print("------------------------")
+        print("Reply: \n\n", reply)
+        print("------------------------")
+        await update.message.reply_text(reply)
+
+    except Exception as e:
+        reply = "Sorry, Something went wrong. Please try again later"
+        logging.error(f"Error: {e}")
+        await update.message.reply_text(reply)
 
 def main():
     # Run the bot
@@ -115,6 +149,9 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("register", register))
     application.add_handler( CallbackQueryHandler(handle_button_click))
+    application.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
+    )
 
 
     # Start the Bot
