@@ -26,9 +26,10 @@ async def start(update: Update, context: CallbackContext):
     print("...Started...")
     print("---------------------------")
 
-    await update.message.reply_text("It's fun time Boss.\n"
-    "First you have to register your account by typing /register"
-    "Then, Ask whatever you want and get fun! And i am fine tuned LLM model")
+    await update.message.reply_text("It's fun time Dude.\n"
+    "I am a     fine tuned LLM model. \n"
+    "First you have to register your account by typing /register. \n"
+    "Then, Ask whatever you want and get fun!")
 async def register(update: Update, context: CallbackContext):
     "Send inline buttons for PIN entry."
 
