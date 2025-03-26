@@ -90,13 +90,21 @@ async def handle_button_click(update: Update, context: CallbackContext):
         if len(pin_code) == 5:
             await query.message.edit_text(f"Sending PIN: {pin_code} to the server...")
             # Here send `pin_code` to your backend verification
-            await query.message.reply_text("PIN verified! you can chat now with me.")
+           
             print("---------------------------")
             print(pin_code)
             print("---------------------------")
-        
-            global is_registered
-            is_registered = True
+            x =  int(input())
+            if x != 0:
+                global is_registered
+                is_registered = True
+            else:
+                print("here")
+                is_registered = False
+            if is_registered:
+                await query.message.reply_text("PIN verified! you can chat now with me.")
+            else:
+                await query.message.reply_text("❌ Wrong PIN, Please Enter the correct PIN")
         else:
             await query.message.reply_text(
                 "❌ Invalid PIN: Please enter exactly 5 digits. "
